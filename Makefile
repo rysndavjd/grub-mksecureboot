@@ -6,25 +6,23 @@ include config.mk
 all:
 
 clean:
-	rm -f grub-secureboot-${VERSION}.tar.gz
+	rm -f grub-mksecureboot-${VERSION}.tar.gz
 
 release: clean
-	mkdir -p grub-secureboot-${VERSION}
+	mkdir -p grub-mksecureboot-${VERSION}
 	cp -R LICENSE Makefile README.md config.mk \
-		grub-mkmok.sh grub-mksecureboot.sh grub-secureboot-${VERSION}
-	tar -cf grub-secureboot-${VERSION}.tar grub-secureboot-${VERSION}
-	gzip grub-secureboot-${VERSION}.tar
-	rm -rf grub-secureboot-${VERSION}
+		grub-mksecureboot.sh grub-mksecureboot-${VERSION}
+	tar -cf grub-mksecureboot-${VERSION}.tar grub-mksecureboot-${VERSION}
+	gzip grub-mksecureboot-${VERSION}.tar
+	rm -rf grub-mksecureboot-${VERSION}
 
 install:
 	mkdir -p ${DESTDIR}${PREFIX}/bin
 	cp -f grub-mksecureboot.sh ${DESTDIR}${PREFIX}/bin/grub-mksecureboot
-	cp -f grub-mkmok.sh ${DESTDIR}${PREFIX}/bin/grub-mkmok
+	sed -i 's/shversion="git"/shversion='${VERSION}'/' ${DESTDIR}${PREFIX}/bin/grub-mksecureboot
 	chmod 755 ${DESTDIR}${PREFIX}/bin/grub-mksecureboot
-	chmod 755 ${DESTDIR}${PREFIX}/bin/grub-mkmok
 
 uninstall:
-	rm -fr ${DESTDIR}${PREFIX}/bin/grub-mksecureboot \
-		${DESTDIR}${PREFIX}/bin/grub-mkmok 
+	rm -fr ${DESTDIR}${PREFIX}/bin/grub-mksecureboot 
 
 .PHONY: all clean release install uninstall
