@@ -11,23 +11,14 @@ Usage: grub-mksecureboot [option] ...
           -m  (Modules included in grub, default is all. eg: [all, luks, normal])
           -k  (Machine Owner Key path eg: /root/mok)
           -c  (Put grub.cfg in memdisk)
-```
-Grub-mkmok is a helper script that sets up initial dependencies for grub-mksecureboot eg: copying of shim to EFI and generation of Machine Owner Keys.
-## grub-mkmok Usage 
-```
-Usage: grub-mksecureboot [option] ...
-    Options:
-          -h  (calls help menu)
-          -s  (install shim to specified EFI directory. eg: /efi)
-          -k  (generate Machine Owner Keys in specified directory. eg: /root/mok)
-          -d  (distro name. eg: gentoo)
+          -g  (generate Machine Owner Keys in specified directory)
 ```
 ### Dependencies: 
 Gentoo
-```
+```sh
 emerge -av sys-boot/shim sys-boot/mokutil sys-boot/efibootmgr dev-libs/openssl app-arch/libarchive net-misc/wget app-shells/bash sys-boot/grub
 ```
 Archlinux (Note: [shim-signed](https://aur.archlinux.org/packages/shim-signed) is required from the AUR.)
-```
+```sh
 pacman -S mokutil efibootmgr openssl libarchive wget bash grub
 ```

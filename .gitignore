@@ -5,3 +5,4 @@ memdiskdir/grub-bootstrap.cfg
 memdiskdir
 test.sh
 releases
+grub-mksecureboot-*.tar.gz

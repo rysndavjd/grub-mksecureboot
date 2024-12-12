@@ -12,7 +12,7 @@ then
 fi
 
 tmp=$(mktemp -d)
-shversion="0.5.2"
+shversion="git"
 
 help () {
     echo "grub-mksecureboot, version $shversion"
@@ -25,6 +25,7 @@ help () {
     echo "      -m  (Modules included in grub, default all is selected [all, luks, normal])"
     echo "      -k  (Machine Owner Key path eg: /root/mok)"
     echo "      -c  (Put grub.cfg in memdisk)"
+    echo "      -g  (generate Machine Owner Keys in specified directory)"
     exit 0
 }
 
@@ -33,18 +34,19 @@ then
     help
 fi
 
-while getopts hd:e:b:m:k:c flag; do
+while getopts hd:e:b:m:k:cg: flag; do
     case "${flag}" in
         h) help;;
         d) distro=${OPTARG}
         echo "distro set to $distro";;
         e) efipath=${OPTARG}
-        echo "EFI path set to $efipath.";;
+        echo "EFI path set to $efipath";;
         b) bootpath=${OPTARG}
-        echo "Boot path set to $bootpath.";;
+        echo "Boot path set to $bootpath";;
         m) moduletype=${OPTARG};;
         k) mokpath=${OPTARG};;
         c) cfginmemdisk=true;;
+        g) machinekeys=${OPTARG};;
         ?) help;;
     esac
 done
@@ -56,8 +58,25 @@ release () {
 }
 
 if [[ -z $distro ]] ; then
-    echo "-d flag not set, using ID from os-release, $(release)."
+    echo "-d flag not set, using ID from os-release: $(release)."
     distro=$(release)
+fi
+
+if [[ ! -z "$machinekeys" ]] ; then
+    if [ -e "$machinekeys/MOK.key" ] ; then 
+        echo -e "MOK keys already exist in $machinekeys\nNot overwriting."
+        exit 2
+    else
+        mkdir -p "$machinekeys"
+        cd "$machinekeys"
+        openssl req -newkey rsa:2048 -nodes -keyout MOK.key -new -x509 -sha256 -subj "/CN=MOK key: $(cat /etc/hostname)/" -out MOK.crt
+        openssl x509 -outform DER -in MOK.crt -out MOK.cer
+        chmod 700 "$machinekeys/MOK.key"
+        chmod 700 "$machinekeys/MOK.crt"
+        chmod 700 "$machinekeys/MOK.cer"
+        echo -e "MOK keys created in $machinekeys"
+        exit 0
+    fi
 fi
 
 #sets grubmodules variable
@@ -198,9 +217,9 @@ fi
 
 makegrub
 if [[ $cfginmemdisk == true ]] ; then
-    echo -e "Remember to generate grub.cfg at /boot/grub/grub.cfg,\nbefore running this script to ensure latest grub.cfg is in memdisk."
+    echo -e "Remember to generate grub.cfg at $bootpath/grub/grub.cfg,\nbefore running this script to ensure latest grub.cfg is in memdisk."
 else
-    echo "Remember to generate grub.cfg at /boot/grub/grub.cfg."
+    echo "Remember to generate grub.cfg at $bootpath/grub/grub.cfg."
 fi
 
 echo "Finished"
