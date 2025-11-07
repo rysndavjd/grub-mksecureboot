@@ -3,10 +3,7 @@
 # Copyright 2024 rysndavjd
 # Distributed under the terms of the GNU General Public License v2
 
-if (( BASH_VERSINFO[0] < 4 )) ; then
-    printf "grub-mksecureboot only supports bash version 4 and higher.\n"
-    exit 1
-fi
+set -e
 
 if [[ $EUID -ne 0 ]]
 then 
@@ -14,13 +11,11 @@ then
     exit 1
 fi
 
-set -o pipefail
-
-TMP=$(mktemp -d)
-VERSION="git"
+tmp=$(mktemp -d)
+shversion="git"
 
 help () {
-    echo "grub-mksecureboot, version $VERSION"
+    echo "grub-mksecureboot, version $shversion"
     echo "Usage: grub-mksecureboot [option] ..."
     echo "Options:"
     echo "      -h  (calls help menu)"
@@ -38,52 +33,6 @@ if [ "$#" == 0 ]
 then
     help
 fi
-
-for arg in $ARGV ; do
-    case $arg in
-        -h | --help)
-            help
-
-        ;;
-        -V | --version)
-            echo "$VERSION"
-            exit 0
-        ;;
-        -d | --distro)
-            distro="$2"
-            shift
-        ;;
-        -e | --efi-path)
-            distro="$2"
-            shift
-        ;;
-        -b | --boot-path)
-            distro="$2"
-            shift
-        ;;
-        -m | --modules)
-            modules="$2"
-            shift
-        ;;
-        -k | --key)
-            machine_key="$2"
-            shift
-        ;;
-        -c | --cert)
-            machine_cert="$2"
-            shift
-        ;;
-        --)
-            shift
-            break
-            ;;
-        *)
-            usagefn
-            oerror "Unknown Option: $1"
-            ;;
-    esac
-    shift
-done
 
 while getopts hd:e:b:m:k:cg: flag; do
     case "${flag}" in
